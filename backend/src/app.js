@@ -6,6 +6,8 @@ import dotenv from 'dotenv';
 dotenv.config({ debug: true });
 import { initializeSocket } from './controllers/socketmanager.js';
 import cors from 'cors'
+import userRoutes from './routes/userRoutes.js'
+import bodyParser from 'body-parser';
 
 const app = express();
 const server = createServer(app);
@@ -13,7 +15,7 @@ const io = initializeSocket(server)
 const PORT = process.env.PORT || 8000
 
 app.use(cors())
-app.use(express.json({limit:'40kb'}))
+app.use(bodyParser.json({limit:'40kb'}))
 app.use(express.urlencoded({extended:true, limit:'40kb'}))
 
  
@@ -24,6 +26,8 @@ const db = async() =>{
     .then(()=> console.log("Connected to db"))
     .catch((err)=> console.error("connection to db failed: ", err.message))
 }
+
+app.use("/api/v1/users",userRoutes)
 
 server.listen(PORT, async () => {
     await db()
