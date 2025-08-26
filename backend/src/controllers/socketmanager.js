@@ -5,7 +5,14 @@ let messages = {};
 let timeOnline = {};
 
 export const initializeSocket = (server) => {
-  const io = new Server(server);
+  const io = new Server(server,{
+    cors:{
+      origin: "*",
+      methods: ["GET","POST"],
+      allowedHeader: ["*"],
+      credentials: true
+    }
+  });
   // return io
   io.on("connection", (socket) => {
     console.log("Something connected");
