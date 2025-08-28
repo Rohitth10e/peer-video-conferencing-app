@@ -41,7 +41,7 @@ function RegisterForm() {
       <div className="flex flex-col items-center w-1/4 bg-white px-8 py-10 rounded-md shadow-md">
         {/* Heading */}
         <div className="text-center mb-12">
-          <h3 className="font-bold text-xl text-blue-600 mb-2">P2P</h3>
+          <h3 className="font-bold text-xl text-blue-600 mb-2">PeerLink</h3>
           <p className="text-zinc-600 text-sm">Create an account</p>
           <p className="text-zinc-600 text-xs">Join millions who trust P2P</p>
         </div>

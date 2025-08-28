@@ -1,14 +1,18 @@
 import axios from "axios";
 import { useState } from "react";
-import { ToastContainer, toast } from 'react-toastify';
-
+import { toast } from 'react-toastify';
+import { useNavigate } from "react-router-dom";
+import {useUser} from "../../context/UserContext.tsx";
 
 function LoginForm() {
 
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email:"",
     password:""
   });
+
+  const { setUser } = useUser()
 
   async function handleLoginSubmit(e){
     e.preventDefault();
@@ -25,7 +29,10 @@ function LoginForm() {
             return;
         }
         localStorage.setItem("authToken",token)
+        setUser(response.data?.data?.user)
+        localStorage.setItem("user", JSON.stringify(response.data?.data?.user))
         toast.success("Login successful")
+        navigate("/dashboard")
     } catch(err: any) {
         toast.error(
             err.response?.data?.message || "Error logging in, please try again"
@@ -39,7 +46,7 @@ function LoginForm() {
         
         {/* Heading */}
         <div className="text-center mb-12">
-          <h3 className="font-bold text-xl text-blue-600 mb-2">P2P</h3>
+          <h3 className="font-bold text-xl text-blue-600 mb-2">PeerLink</h3>
           <p className="text-zinc-600 text-sm">Sign In</p>
           <p className="text-zinc-600 text-xs">
             stay connected with reliable HD video and audio
