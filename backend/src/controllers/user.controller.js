@@ -1,13 +1,10 @@
 import {User} from '../models/user.js'
 import httpStatus from 'http-status'
 import bcrypt ,{hash} from 'bcrypt'
-import jwt from 'jsonwebtoken';
+import {generateToken,validateToken} from '../utils/token.js'
 
 // token middleware
 
-const generateToken =(email,username)=> {
-    return jwt.sign({email,username}, 'fcbarcelona' ,{algorithm:'HS256',expiresIn:'1h'})
-}
 
 // register
 const register = async(req,res)=>{
@@ -77,4 +74,19 @@ const login = async(req,res)=>{
     }
 }
 
-export { register, login }
+const updateProfile = async(req,res) =>{
+    try{
+        const { username } = req.user;
+        const user = await User.findOneAndUpdate({username},req.body,{runValidators:true, new:true});
+
+        if(!user){
+            return res.status(httpStatus.UNAUTHORIZED).json({message:"User not found"})
+        }
+
+        return res.status(httpStatus.OK).json({message:"profile update successfull",data:user})
+    }catch(err){
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({message:"something went wrong"})
+    }
+}
+
+export { register, login, updateProfile }

@@ -15,10 +15,10 @@ function Nav() {
         .join("")
 
     return (
-        <nav className="w-full h-20 grid grid-cols-3 items-center px-6 border-b border-zinc-200 bg-white text-zinc-700 tracking-tight">
+        <nav className="w-full h-20 py-5 grid grid-cols-3 items-center px-6 border-b border-zinc-200 bg-white text-zinc-700 tracking-tight">
             {/* Left: Logo */}
             <div className="flex items-center">
-                <h3 className="font-semibold text-xl text-blue-600">PeerLink</h3>
+                <h3 className="font-semibold text-xl text-blue-500">PeerLink</h3>
             </div>
 
             {/* Center: Nav Links */}
@@ -37,7 +37,8 @@ function Nav() {
 
             {/* Right: Search + Settings + Avatar */}
             <div className="flex justify-end items-center gap-4">
-                <div className="flex items-center gap-2 bg-transparent px-3 py-1.5 rounded-md focus-within:ring-2 focus-within:ring-blue-400">
+                <div
+                    className="flex items-center gap-2 bg-transparent px-3 py-1.5 rounded-md focus-within:ring-2 focus-within:ring-blue-400">
                     <span className="fas fa-search text-zinc-500"></span>
                     <input
                         type="search"
@@ -46,12 +47,12 @@ function Nav() {
                     />
                 </div>
 
-                <span className="fas fa-gear text-zinc-600"></span>
-                <span className="hidden sm:inline">{username}</span>
-
-                <div className="w-8 h-8 rounded-full bg-blue-400 text-white flex items-center justify-center font-semibold cursor-pointer">
+                <span className="fas fa-gear text-zinc-600 pr-8"></span>
+                <div
+                    className="w-8 h-8 rounded-full bg-blue-400 text-white flex items-center justify-center font-semibold cursor-pointer">
                     {initials || "U"}
                 </div>
+                <span className="hidden sm:inline">{username}</span>
             </div>
         </nav>
     )
