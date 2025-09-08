@@ -4,6 +4,9 @@ type User = {
     username: string,
     email: string,
     name: string,
+    company: string,
+    job: string,
+    location: string,
 }
 
 type UserContextType = {

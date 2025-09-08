@@ -1,1 +1,9 @@
 @import "tailwindcss";
+
+.input-style{
+    @apply p-2 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400 transition duration-200 ease-in-out;
+}
+
+.label-input-style{
+    @apply flex flex-col align-baseline text-sm gap-2;
+}

@@ -6,6 +6,23 @@ import BannerCard from "../../components/banner_cards/BannerCard.tsx";
 function Dashboard() {
     const { user } = useUser();
 
+    const setTime = () => {
+        const date = new Date();
+        const hours = date.getHours(); // 0–23
+
+        if (hours < 12) {
+            return "Good Morning";
+        } else if (hours === 12) {
+            return "Good Noon";
+        } else if (hours < 18) {
+            return "Good Afternoon";
+        } else {
+            return "Good Evening";
+        }
+    };
+
+
+
     const BannerCardItems = [
         {
             icon: "fa-video", // FontAwesome icon class
@@ -47,7 +64,7 @@ function Dashboard() {
                 <div className="flex-1 py-8 px-20 tracking-tighter overflow-y-auto">
                     {/* Greeting */}
                     <h1 className="text-2xl font-semibold mb-1">
-                        Good morning, {user?.name ?? "User"}!
+                        { setTime() }, {user?.name ?? "User"}!
                     </h1>
                     <p className="text-gray-600 text-sm">
                         Choose between traditional meetings or secure P2P video calls.

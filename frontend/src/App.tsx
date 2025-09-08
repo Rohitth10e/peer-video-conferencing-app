@@ -7,6 +7,8 @@ import RegisterForm from "./features/auth/RegisterForm";
 import Dashboard from "./pages/dashboard/Dashboard.tsx";
 import {ProtectedRoute} from "./hooks/useAuth.ts";
 import {UserProvider} from "./context/UserContext.tsx";
+import Profile from "./pages/profile/Profile.tsx";
+import VideoMeet from "./pages/Video-meet/VideoMeet.tsx";
 
 function App() {
   return (
@@ -24,6 +26,22 @@ function App() {
                   </ProtectedRoute>
                 }
             />
+              <Route
+              path="/profile"
+              element={
+                  <ProtectedRoute>
+                      <Profile />
+                  </ProtectedRoute>
+              }
+              />
+              <Route
+                  path="/:url"
+                  element={
+                      <ProtectedRoute>
+                          <VideoMeet />
+                      </ProtectedRoute>
+                  }
+              />
           </Routes>
           <ToastContainer
               position="top-center"

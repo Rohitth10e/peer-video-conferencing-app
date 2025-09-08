@@ -18,7 +18,7 @@ function LoginForm() {
     e.preventDefault();
     try {
         const response = await axios.post("http://localhost:8000/api/v1/users/login",{
-            username: formData.email,
+            email: formData.email,
             password: formData.password
         })
 

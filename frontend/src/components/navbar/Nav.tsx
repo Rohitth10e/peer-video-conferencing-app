@@ -1,4 +1,5 @@
 import { useUser } from "../../context/UserContext"
+import {useNavigate} from "react-router-dom";
 
 function Nav() {
     const navItems = [
@@ -7,6 +8,7 @@ function Nav() {
         { label: "Team Chat", href: "/chat" },
     ]
 
+    const navigate = useNavigate();
     const { user } = useUser()
     const username = user?.username || "User"
     const initials = user?.name
@@ -47,12 +49,14 @@ function Nav() {
                     />
                 </div>
 
-                <span className="fas fa-gear text-zinc-600 pr-8"></span>
-                <div
-                    className="w-8 h-8 rounded-full bg-blue-400 text-white flex items-center justify-center font-semibold cursor-pointer">
-                    {initials || "U"}
-                </div>
-                <span className="hidden sm:inline">{username}</span>
+                {/*<span className="fas fa-gear text-zinc-600 pr-8"></span>*/}
+                <button className='flex items-center gap-2' onClick={()=>navigate('/profile')}>
+                    <div
+                        className="w-8 h-8 rounded-full bg-blue-400 text-white flex items-center justify-center font-semibold cursor-pointer">
+                        {initials || "U"}
+                    </div>
+                    <span className="hidden sm:inline">{username}</span>
+                </button>
             </div>
         </nav>
     )
