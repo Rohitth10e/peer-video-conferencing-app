@@ -10,15 +10,24 @@ import userRoutes from './routes/userRoutes.js'
 import bodyParser from 'body-parser';
 
 const app = express();
+app.use((req, res, next) => {
+    console.log(`[Request Entry] Path: ${req.path}`);
+    console.log('[Request Entry] Authorization Header:', req.headers.authorization);
+    next(); // Pass control to the next middleware
+});
 const server = createServer(app);
 const io = initializeSocket(server)
 const PORT = process.env.PORT || 8000
 
-app.use(cors())
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+    allowedHeaders: ['Authorization', 'Content-Type']
+}));
 app.use(bodyParser.json({limit:'40kb'}))
 app.use(express.urlencoded({extended:true, limit:'40kb'}))
 
- 
+
 app.set(PORT)
 
 const db = async() =>{

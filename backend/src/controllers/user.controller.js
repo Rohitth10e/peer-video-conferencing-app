@@ -1,7 +1,7 @@
 import {User} from '../models/user.js'
 import httpStatus from 'http-status'
 import bcrypt ,{hash} from 'bcrypt'
-import {generateToken,validateToken} from '../utils/token.js'
+import { generateToken } from '../utils/jwt.js'
 
 // token middleware
 
@@ -39,13 +39,13 @@ const register = async(req,res)=>{
 // login
 
 const login = async(req,res)=>{
-    const {username, password} = req.body
-    if (username == "" || password == "") {
-        return res.status(httpStatus.BAD_REQUEST).json({message:"username and password required"})
+    const {email, password} = req.body
+    if (email == "" || password == "") {
+        return res.status(httpStatus.BAD_REQUEST).json({message:"email and password required"})
     }
 
     try{
-        const user = await User.findOne({ username })
+        const user = await User.findOne({ email })
         if (!user) {
             return res.status(httpStatus.BAD_REQUEST).json({message:"User not found"})
         }
@@ -74,6 +74,15 @@ const login = async(req,res)=>{
     }
 }
 
+const getUser = async(req,res) =>{
+    const { email } = req.user;
+    const user = await User.findOne({email}).select("-password -__v");
+    if(!user){
+        return res.status(httpStatus.NOT_FOUND).json({message:"User not found"});
+    }
+    return res.status(httpStatus.OK).json({success:true,data:user});
+}
+
 const updateProfile = async(req,res) =>{
     try{
         const { username } = req.user;
@@ -89,4 +98,4 @@ const updateProfile = async(req,res) =>{
     }
 }
 
-export { register, login, updateProfile }
+export { register, login, updateProfile, getUser }
