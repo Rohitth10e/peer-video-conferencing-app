@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; 
+import "react-toastify/dist/ReactToastify.css";
 
 import LoginForm from "./features/auth/LoginForm";
 import RegisterForm from "./features/auth/RegisterForm";
@@ -9,6 +9,7 @@ import {ProtectedRoute} from "./hooks/useAuth.ts";
 import {UserProvider} from "./context/UserContext.tsx";
 import Profile from "./pages/profile/Profile.tsx";
 import VideoMeet from "./pages/Video-meet/VideoMeet.tsx";
+import {MeetingJoin} from "./components/meeting/MeetingJoin.tsx";
 
 function App() {
   return (
@@ -34,14 +35,25 @@ function App() {
                   </ProtectedRoute>
               }
               />
-              <Route
-                  path="/:url"
-                  element={
-                      <ProtectedRoute>
-                          <VideoMeet />
-                      </ProtectedRoute>
-                  }
-              />
+              {/*<Route*/}
+              {/*    path="/:url"*/}
+              {/*    element={*/}
+              {/*        <ProtectedRoute>*/}
+              {/*            <VideoMeet />*/}
+              {/*        </ProtectedRoute>*/}
+              {/*    }*/}
+              {/*/>*/}
+              <Route path="/meetings" element={
+                  <ProtectedRoute>
+                      <VideoMeet/>
+                  </ProtectedRoute>
+              } />
+
+              <Route path="/meeting/:id" element={
+                  <ProtectedRoute>
+                      <VideoMeet/>
+                  </ProtectedRoute>
+              } />
           </Routes>
           <ToastContainer
               position="top-center"
