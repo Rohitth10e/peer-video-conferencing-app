@@ -28,7 +28,7 @@ app.use(bodyParser.json({limit:'40kb'}))
 app.use(express.urlencoded({extended:true, limit:'40kb'}))
 
 
-app.set(PORT)
+app.set("port", PORT)
 
 const db = async() =>{
     await mongoose.connect("mongodb+srv://rohith10e:2223@peer-video-conference-a.ycceffc.mongodb.net/" || process.env.MONGO_URI)
@@ -40,5 +40,5 @@ app.use("/api/v1/users",userRoutes)
 
 server.listen(PORT, async () => {
     await db()
-    console.log("server running on port: 8000")
+    console.log(`server running on port: ${PORT}`);
 })

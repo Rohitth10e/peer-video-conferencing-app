@@ -9,7 +9,7 @@ export const initializeSocket = (server) => {
     cors:{
       origin: "*",
       methods: ["GET","POST"],
-      allowedHeader: ["*"],
+      allowedHeaders: ["*"],
       credentials: true
     }
   });
@@ -72,4 +72,5 @@ export const initializeSocket = (server) => {
         }
     });
   });
+  return io
 };
