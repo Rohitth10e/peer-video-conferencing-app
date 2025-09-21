@@ -7,3 +7,7 @@
 .label-input-style{
     @apply flex flex-col align-baseline text-sm gap-2;
 }
+
+.meeting-input-label{
+    @apply text-sm font-semibold tracking-tight;
+}
