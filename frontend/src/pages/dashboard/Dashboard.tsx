@@ -51,7 +51,7 @@ function Dashboard() {
     ];
 
     return (
-        <div className="w-full h-screen bg-blue-50 flex flex-col">
+        <div className="w-full h-screen bg-zinc-100 flex flex-col">
             {/* Top Navbar */}
             <Nav />
 

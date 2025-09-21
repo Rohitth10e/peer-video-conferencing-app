@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../context/UserContext.tsx";
 import { useState, useEffect } from "react";
+import {MeetingJoinBrandInfo} from "./MeetingJoinBrandInfo.tsx";
 
 export function MeetingJoin({videoRef, mic, vid, setMic, setVid}) {
     const navigate = useNavigate();
@@ -43,7 +44,8 @@ export function MeetingJoin({videoRef, mic, vid, setMic, setVid}) {
     return (
         <div className="w-full h-screen flex flex-col">
             {/* Navbar */}
-            <div className="w-full bg-white flex justify-between items-center border-b border-zinc-200 py-2 px-36 shadow-sm">
+            <div
+                className="w-full bg-white flex justify-between items-center border-b border-zinc-200 py-2 px-36 shadow-sm">
                 <div className="flex items-center gap-3">
                     <button
                         className="fas fa-arrow-left text-zinc-600 hover:text-zinc-800"
@@ -53,7 +55,8 @@ export function MeetingJoin({videoRef, mic, vid, setMic, setVid}) {
                 </div>
                 <div className="flex items-center gap-2">
                     <button className="flex items-center gap-2 hover:bg-blue-50 px-2 py-1 rounded-md">
-                        <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold cursor-pointer">
+                        <div
+                            className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold cursor-pointer">
                             {initials}
                         </div>
                         <span className="hidden sm:inline font-medium text-zinc-700">{username}</span>
@@ -62,25 +65,27 @@ export function MeetingJoin({videoRef, mic, vid, setMic, setVid}) {
             </div>
 
             {/* Main Layout */}
-            <div className="main-layout w-full bg-blue-50 min-h-screen py-10 px-36 flex justify-between">
+            <div
+                className="main-layout w-full bg-zinc-100 py-10 px-36 flex justify-between">
                 <div className='left-container'>
                     <div className='flex items-center gap-8'>
                         <p
-                            className={meetingSelection==="create"? 'text-blue-500': '' }
-                            onClick={()=>setMeetingSelection("create")}
+                            className={meetingSelection === "create" ? 'text-blue-500 cursor-pointer' : 'cursor-pointer'}
+                            onClick={() => setMeetingSelection("create")}
                         >
                             Create
                         </p>
                         <p
-                            className={meetingSelection==="join"? 'text-blue-500': '' }
-                            onClick={()=>setMeetingSelection("join")}
+                            className={meetingSelection === "join" ? 'text-blue-500 cursor-pointer' : 'cursor-pointer'}
+                            onClick={() => setMeetingSelection("join")}
                         >
                             Join
                         </p>
                     </div>
                     {
                         meetingSelection === "create" ?
-                            <div className={"flex flex-col items-start w-[350px] rounded-md bg-white p-4 h-auto mt-8 gap-8"}>
+                            <div
+                                className={"flex flex-col items-start w-[350px] rounded-md bg-white p-4 h-auto mt-8 gap-8"}>
                                 <div className="card-head">
                                     <p className='font-semibold tracking-tighter'>Create a meeting</p>
                                     <input
@@ -92,14 +97,16 @@ export function MeetingJoin({videoRef, mic, vid, setMic, setVid}) {
                                     />
                                 </div>
                                 <div className='card-foot'>
-                                    <button className='px-2 w-[320px] py-1 bg-blue-500 text-white rounded-sm font-semibold'
-                                    onClick={handleCreate}>
+                                    <button
+                                        className='px-2 w-[320px] py-1 bg-blue-500 text-white rounded-sm font-semibold cursor-pointer'
+                                        onClick={handleCreate}>
                                         create
                                     </button>
                                 </div>
-                            </div>:
+                            </div> :
 
-                            <div className={"flex flex-col items-start w-[350px] rounded-md bg-white p-4 h-auto mt-8 gap-8"}>
+                            <div
+                                className={"flex flex-col items-start w-[350px] rounded-md bg-white p-4 h-auto mt-8 gap-8"}>
                                 <div className="card-head">
                                     <p className='font-semibold tracking-tighter'>Join a meeting</p>
                                     <input
@@ -111,34 +118,37 @@ export function MeetingJoin({videoRef, mic, vid, setMic, setVid}) {
                                     />
                                 </div>
                                 <div className='card-foot'>
-                                    <button className='px-2 py-1 w-[320px] bg-blue-500 text-white rounded-sm font-semibold'>
+                                    <button
+                                        className='px-2 py-1 w-[320px] bg-blue-500 text-white rounded-sm font-semibold cursor-pointer'>
                                         Join
                                     </button>
-                                    <p className='text-xs text-zinc-500 tracking-tighter mt-2'>Room IDs are 10 characters long (letters and numbers)</p>
+                                    <p className='text-xs text-zinc-500 tracking-tighter mt-2'>Room IDs are 10
+                                        characters long (letters and numbers)</p>
                                 </div>
                             </div>
                     }
                 </div>
                 <div className='right-container'>
                     <video
-                    ref={videoRef}
-                    muted
-                    autoPlay
-                    playsInline
-                    className="rounded-xl border-[2px] border-blue-400 max-h-80"
+                        ref={videoRef}
+                        muted
+                        autoPlay
+                        playsInline
+                        className="rounded-xl max-h-80"
                     />
                     <div className='flex items-center gap-5 my-2'>
                         <button
                             className={`fa-solid fa-microphone text-2xl ${mic ? 'text-green-500' : 'text-red-500'}`}
-                            onClick={() => setMic((prev)=>!prev)}
+                            onClick={() => setMic((prev) => !prev)}
                         />
                         <button
                             className={`fa-solid fa-video text-2xl ${vid ? 'text-green-500' : 'text-red-500'}`}
-                            onClick={() => setVid((prev)=>!prev)}
+                            onClick={() => setVid((prev) => !prev)}
                         />
                     </div>
                 </div>
             </div>
+            <MeetingJoinBrandInfo/>
         </div>
     );
 }

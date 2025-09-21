@@ -4,6 +4,7 @@ import { io } from 'socket.io-client';
 import {server} from "../../env.ts";
 import {MeetingJoin} from "../../components/meeting/MeetingJoin.tsx";
 import {useParams} from "react-router-dom";
+import {MeetingJoinBrandInfo} from "../../components/meeting/MeetingJoinBrandInfo.tsx";
 
 const server_url = server
 const connections = {};
@@ -286,48 +287,114 @@ function VideoMeet(){
         getMedia();
     }
 
-    return(
+    return (
         <>
-            {
-                askUsernameAvailable ?
+            {askUsernameAvailable ? (
+                <div className='flex flex-col'>
                     <MeetingJoin
                         videoRef={localVideoRef}
                         mic={mic}
                         vid={vid}
                         setMic={setMic}
                         setVid={setVid}
-                    />:
-                    <div>
-                        <h2>Hello, {username}, {server_url}</h2>
-                        <video
-                            ref={localVideoRef}
-                            autoPlay
-                            playsInline
-                            muted
-                        />
+                    />
+                    {/*<MeetingJoinBrandInfo />*/}
+                </div>
+            ) : (
+                <div className="w-full h-screen flex flex-col bg-zinc-900 text-white">
+                    {/* Top Bar */}
+                    <div className="w-full flex justify-between items-center px-6 py-3 bg-zinc-800 border-b border-zinc-700">
+                        <h2 className="font-semibold">Meeting ID: {id}</h2>
+                        <button
+                            onClick={() => window.location.href = "/dashboard"}
+                            className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md font-medium"
+                        >
+                            Leave Meeting
+                        </button>
+                    </div>
 
-                        <div>
-                            {video.map((vid) => (
-                                <div key={vid.socketId}>
-                                    <p>{vid.socketId}</p>
-                                    <video
-                                        autoPlay
-                                        playsInline
-                                        muted
-                                        ref={(ref) => {
-                                            if (ref && vid.stream) ref.srcObject = vid.stream;
-                                        }}
-                                        data-socket={vid.socketId}
-                                    >
-                                    </video>
-                                </div>
-                            ))}
+                    {/* Video Grid */}
+                    <div className="flex-1 grid grid-cols-2 gap-2 p-4 overflow-auto">
+                        {/* Local video */}
+                        <div className="relative bg-black rounded-lg overflow-hidden">
+                            <video
+                                ref={localVideoRef}
+                                autoPlay
+                                playsInline
+                                muted
+                                className="w-full h-full object-cover"
+                            />
+                            <span className="absolute bottom-2 left-2 text-sm bg-black/60 px-2 py-1 rounded">
+              You
+            </span>
                         </div>
 
+                        {/* Remote videos */}
+                        {video.map((vid) => (
+                            <div
+                                key={vid.socketId}
+                                className="relative bg-black rounded-lg overflow-hidden"
+                            >
+                                <video
+                                    autoPlay
+                                    playsInline
+                                    ref={(ref) => {
+                                        if (ref && vid.stream) ref.srcObject = vid.stream;
+                                    }}
+                                    className="w-full h-full object-cover"
+                                />
+                                <span className="absolute bottom-2 left-2 text-sm bg-black/60 px-2 py-1 rounded">
+                {vid.socketId}
+              </span>
+                            </div>
+                        ))}
                     </div>
-            }
+
+                    {/* Control Bar */}
+                    <div className="w-full flex justify-center items-center gap-6 py-4 bg-zinc-800 border-t border-zinc-700">
+                        {/* Mic toggle */}
+                        <button
+                            onClick={() => {
+                                const audioTrack = window.localStream?.getAudioTracks()[0];
+                                if (audioTrack) {
+                                    audioTrack.enabled = !audioTrack.enabled;
+                                    setMic(!mic);
+                                }
+                            }}
+                            className="p-3 rounded-full bg-zinc-700 hover:bg-zinc-600"
+                        >
+                            <i className={`fas ${mic ? "fa-microphone" : "fa-microphone-slash"}`} />
+                        </button>
+
+                        {/* Video toggle */}
+                        <button
+                            onClick={() => {
+                                const videoTrack = window.localStream?.getVideoTracks()[0];
+                                if (videoTrack) {
+                                    videoTrack.enabled = !videoTrack.enabled;
+                                    setVid(!vid);
+                                }
+                            }}
+                            className="p-3 rounded-full bg-zinc-700 hover:bg-zinc-600"
+                        >
+                            <i className={`fas ${vid ? "fa-video" : "fa-video-slash"}`} />
+                        </button>
+
+                        {/* Screen share (TODO implement logic) */}
+                        <button className="p-3 rounded-full bg-zinc-700 hover:bg-zinc-600">
+                            <i className="fas fa-desktop" />
+                        </button>
+
+                        {/* Chat (placeholder for now) */}
+                        <button className="p-3 rounded-full bg-zinc-700 hover:bg-zinc-600">
+                            <i className="fas fa-comment" />
+                        </button>
+                    </div>
+                </div>
+            )}
         </>
     );
+
 }
 
 export default VideoMeet;
