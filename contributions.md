@@ -13,7 +13,7 @@ Welcome to the project! We're excited to have you. Here’s a guide to help you 
 * **Frontend:** React, TypeScript, Tailwind CSS
 * **Backend:** Node.js, Express.js
 * **Real-time Communication:** Socket.IO, WebRTC
-* **Database:** MongoDB (or specify if different)
+* **Database:** MongoDB
 
 **How to Contribute:**
 
