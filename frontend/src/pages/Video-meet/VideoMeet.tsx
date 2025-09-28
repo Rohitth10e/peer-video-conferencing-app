@@ -4,7 +4,6 @@ import { io } from 'socket.io-client';
 import {server} from "../../env.ts";
 import {MeetingJoin} from "../../components/meeting/MeetingJoin.tsx";
 import {useParams} from "react-router-dom";
-import {MeetingJoinBrandInfo} from "../../components/meeting/MeetingJoinBrandInfo.tsx";
 
 const server_url = server
 const connections = {};

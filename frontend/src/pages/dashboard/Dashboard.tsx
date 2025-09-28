@@ -2,6 +2,7 @@ import Nav from "../../components/navbar/Nav.tsx";
 import SideBar from "../../components/sidebar/Sidebar.tsx";
 import { useUser } from "../../context/UserContext.tsx";
 import BannerCard from "../../components/banner_cards/BannerCard.tsx";
+import MeetingActivityCard from "../../components/Cards/MeetingActivityCard.tsx";
 
 function Dashboard() {
     const { user } = useUser();
@@ -97,6 +98,11 @@ function Dashboard() {
                         {BannerCardItems.map((item) => (
                             <BannerCard icon={item.icon} desc={item.desc} label={item.label} color={item.color} />
                         ))}
+                    </div>
+
+                    {/*meetings*/}
+                    <div>
+                        <MeetingActivityCard />
                     </div>
                 </div>
             </div>
