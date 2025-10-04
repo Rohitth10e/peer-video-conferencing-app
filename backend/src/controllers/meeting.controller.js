@@ -74,3 +74,15 @@ export const joinMeet = async(req, res)=>{
         return res.status(500).json({ error: "Something went wrong" });
     }
 }
+
+export const getMeetings = async(req, res)=>{
+    try {
+        const meetings = await Meeting.find();
+        return res.status(200).json({meetingsData: meetings});
+    } catch (e) {
+        if (process.env.NODE_ENV === "development") {
+            console.error(e);
+        }
+        return res.status(500).json({ error: "Something went wrong" });
+    }
+}

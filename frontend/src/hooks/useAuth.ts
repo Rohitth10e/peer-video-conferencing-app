@@ -13,7 +13,7 @@ function ProtectedRoute({ children }) {
     const { isAuthenticated } = useAuth();
 
     if(!isAuthenticated) {
-        return navigate("/login")
+        return navigate("/")
     }
     return children;
 }

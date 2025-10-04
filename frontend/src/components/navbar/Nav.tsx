@@ -3,7 +3,7 @@ import {useNavigate} from "react-router-dom";
 
 function Nav() {
     const navItems = [
-        { label: "Home", href: "/" },
+        { label: "Home", href: "/dashboard" },
         { label: "Meetings", href: "/meetings" },
         { label: "Team Chat", href: "/chat" },
     ]
