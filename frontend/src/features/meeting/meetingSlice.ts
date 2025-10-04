@@ -1,14 +1,20 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api/api.ts";
 
+// const initialState = {
+//     meeting_name: "",
+//     user_id:"",
+//     meetingCode:"",
+//     scheduledAt:null,
+//     duration:0,
+//     createdAt:null,
+//     status: "scheduled"
+// }
+
 const initialState = {
-    meeting_name: "",
-    user_id:"",
-    meetingCode:"",
-    scheduledAt:null,
-    duration:0,
-    createdAt:null,
-    status: "scheduled"
+    meetings: [],
+    loading: false,
+    error: null
 }
 
 export const fetchMeeting = createAsyncThunk(
@@ -24,14 +30,24 @@ const meetingSlice = createSlice({
     initialState,
     reducers : {
         setMeeting: (state, action) => {
-            return {...state, ...action.payload};
+            state.meetings.push(...action.payload)
         },
         clearMeeting: () => initialState,
     },
     extraReducers : (builder) => {
-        builder.addCase(fetchMeeting.fulfilled, (state, action) => {
-            return {...state, ...action.payload};
-        });
+        builder
+            .addCase(fetchMeeting.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchMeeting.fulfilled, (state, action) => {
+                state.loading = false;
+                state.meetings = action.payload.meetingsData;; // store backend array
+            })
+            .addCase(fetchMeeting.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            });
+
     },
 })
 

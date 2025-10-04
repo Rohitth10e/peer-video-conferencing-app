@@ -2,10 +2,24 @@ import Nav from "../../components/navbar/Nav.tsx";
 import SideBar from "../../components/sidebar/Sidebar.tsx";
 import { useUser } from "../../context/UserContext.tsx";
 import BannerCard from "../../components/banner_cards/BannerCard.tsx";
-import MeetingActivityCard from "../../components/Cards/MeetingActivityCard.tsx";
+import PastMeetings from "../../components/Cards/PastMeetings.tsx";
+import {fetchMeeting} from "../../features/meeting/meetingSlice.ts";
+import {useDispatch, useSelector} from "react-redux";
+import {useEffect} from "react";
+import RecentActivity from "../../components/Cards/RecentActivity.tsx";
 
 function Dashboard() {
     const { user } = useUser();
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        dispatch(fetchMeeting())
+    }, [dispatch]);
+
+    const meetings = useSelector(state => state.meeting.meetings ?? []);
+    const pastMeetings = meetings.filter(m => m.status === "ended");
+    const scheduledMeetings = meetings.filter(m => m.status === "scheduled");
+    const ongoingMeetings = meetings.filter(m => m.status === "ongoing");
 
     const setTime = () => {
         const date = new Date();
@@ -52,7 +66,7 @@ function Dashboard() {
     ];
 
     return (
-        <div className="w-full h-screen bg-zinc-100 flex flex-col">
+        <div className="w-full min-h-screenS bg-zinc-100 flex flex-col">
             {/* Top Navbar */}
             <Nav />
 
@@ -101,8 +115,9 @@ function Dashboard() {
                     </div>
 
                     {/*meetings*/}
-                    <div>
-                        <MeetingActivityCard />
+                    <div className='flex gap-5'>
+                        <PastMeetings meeting={pastMeetings}  />
+                        <RecentActivity scheduledMeetings={scheduledMeetings} ongoingMeetings={ongoingMeetings} />
                     </div>
                 </div>
             </div>
