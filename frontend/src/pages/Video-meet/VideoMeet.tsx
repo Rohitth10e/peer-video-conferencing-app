@@ -30,6 +30,31 @@ function VideoMeet(){
     const { id } = useParams();
     console.log("Meeting ID:", id);
 
+    function handleJoinMicToggle(){
+        const audioTrack = window.localStream?.getAudioTracks()[0];
+        if (audioTrack) {
+            const newEnabled = !audioTrack.enabled;
+            audioTrack.enabled = newEnabled;
+            setMic(newEnabled);
+        }
+    }
+
+    function handleJoinVideoToggle(){
+        const videoTrack = window.localStream?.getVideoTracks()[0];
+        if (videoTrack) {
+            const newEnabled = !videoTrack.enabled;
+            videoTrack.enabled = newEnabled;
+            setVid(newEnabled);
+        }
+    }
+
+    // useEffect(() => {
+    //     if (localVideoRef.current && stream) {
+    //         localVideoRef.current.srcObject = stream;
+    //     }
+    // }, [stream]);
+
+
     useEffect(()=> {
         if(id && stream) {
             connect();
@@ -41,6 +66,8 @@ function VideoMeet(){
             const mediaStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
             setStream(mediaStream);
             window.localStream = mediaStream;
+            setMic(true);
+            setVid(true);
             // show local immediately if mounted
             if (localVideoRef.current) localVideoRef.current.srcObject = mediaStream;
             return mediaStream;
@@ -294,8 +321,8 @@ function VideoMeet(){
                         videoRef={localVideoRef}
                         mic={mic}
                         vid={vid}
-                        setMic={setMic}
-                        setVid={setVid}
+                        onMictoggle={handleJoinMicToggle}
+                        onVidtoggle={handleJoinVideoToggle}
                     />
                     {/*<MeetingJoinBrandInfo />*/}
                 </div>

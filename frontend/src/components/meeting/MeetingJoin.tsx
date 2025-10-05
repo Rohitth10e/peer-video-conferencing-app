@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import {MeetingJoinBrandInfo} from "./MeetingJoinBrandInfo.tsx";
 import {toast} from "react-toastify";
 
-export function MeetingJoin({videoRef, mic, vid, setMic, setVid}) {
+export function MeetingJoin({videoRef, mic, vid, onMictoggle, onVidtoggle}) {
     const navigate = useNavigate();
     const { user } = useUser();
     const [meetingSelection, setMeetingSelection] = useState<"create" | "join">("create");
@@ -225,11 +225,11 @@ export function MeetingJoin({videoRef, mic, vid, setMic, setVid}) {
                     <div className='flex items-center gap-5 my-2'>
                         <button
                             className={`fa-solid fa-microphone text-2xl ${mic ? 'text-green-500' : 'text-red-500'}`}
-                            onClick={() => setMic((prev) => !prev)}
+                            onClick={onMictoggle}
                         />
                         <button
                             className={`fa-solid fa-video text-2xl ${vid ? 'text-green-500' : 'text-red-500'}`}
-                            onClick={() => setVid((prev) => !prev)}
+                            onClick={onVidtoggle}
                         />
                     </div>
                 </div>
