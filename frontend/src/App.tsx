@@ -5,7 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import LoginForm from "./features/auth/LoginForm";
 import RegisterForm from "./features/auth/RegisterForm";
 import Dashboard from "./pages/dashboard/Dashboard.tsx";
-import {ProtectedRoute} from "./hooks/useAuth.ts";
+import {ProtectedRoute} from "./hooks/useAuth.tsx";
 import {UserProvider} from "./context/UserContext.tsx";
 import Profile from "./pages/profile/Profile.tsx";
 import VideoMeet from "./pages/Video-meet/VideoMeet.tsx";

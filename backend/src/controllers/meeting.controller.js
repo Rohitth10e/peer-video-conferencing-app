@@ -86,3 +86,15 @@ export const getMeetings = async(req, res)=>{
         return res.status(500).json({ error: "Something went wrong" });
     }
 }
+
+export const getMeetingInfo = async(req,res)=>{
+    const { id } = req.params;
+    try{
+        const meeting = await Meeting.findOne({ meetingCode: id });
+        if(!meeting) return res.status(400).send({error: 'Meeting not found'});
+        return res.status(200).json({meetingData: meeting});
+    } catch(err) {
+            console.error(err)
+        return res.status(500).json({ error: "Something went wrong" });
+    }
+}

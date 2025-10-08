@@ -4,6 +4,11 @@ import { io } from 'socket.io-client';
 import {server} from "../../env.ts";
 import {MeetingJoin} from "../../components/meeting/MeetingJoin.tsx";
 import {useParams} from "react-router-dom";
+import {useUser} from "../../context/UserContext.tsx";
+import api from "../../api/api.ts";
+import {
+    Mic, MicOff, Video, VideoOff, Monitor, MessageCircle, LogOut
+} from 'lucide-react';
 
 const server_url = server
 const connections = {};
@@ -12,6 +17,30 @@ const peerConfigConnections = {
         { "urls": "stun:stun.l.google.com:19302" }
     ]
 }
+
+// const TopBar = ({ meetingName, meetingId }) => (
+//     <div className="absolute top-0 left-0 right-0 z-10 flex justify-between items-center p-4 bg-gradient-to-b from-black/50 to-transparent">
+//         <h2 className="font-semibold text-lg">{meetingName || 'Meeting'}</h2>
+//         <div className="flex items-center gap-4">
+//             <span className="flex items-center gap-2 text-sm">
+//                 <Users size={20} />
+//                 {/* Placeholder for participant count */}
+//                 <span>{video.length + 1}</span>
+//             </span>
+//             <button
+//                 onClick={() => {
+//                     navigator.clipboard.writeText(window.location.href)
+//                         .then(() => toast.success("Meeting link copied!"))
+//                         .catch(() => toast.error("Failed to copy link"));
+//                 }}
+//                 className="flex items-center gap-2 bg-zinc-800/80 hover:bg-zinc-700 text-sm px-4 py-2 rounded-full font-medium transition"
+//             >
+//                 <Copy size={16} />
+//                 Copy Link
+//             </button>
+//         </div>
+//     </div>
+// );
 
 function VideoMeet(){
     const localVideoRef = useRef(null);
@@ -23,12 +52,13 @@ function VideoMeet(){
     const [stream, setStream] = useState(null);
     const [video, setVideo] = useState([]);   // keep ONLY for remote videos
     const [askUsernameAvailable, setUsernameAvailable] = useState(true);
-    const [username, setUsername] = useState("");
     const [mic, setMic] = useState(false);
     const [vid, setVid] = useState(false);
+    const [meeting, setMeeting] = useState([]);
 
     const { id } = useParams();
     console.log("Meeting ID:", id);
+    const {user} = useUser()
 
     function handleJoinMicToggle(){
         const audioTrack = window.localStream?.getAudioTracks()[0];
@@ -53,6 +83,24 @@ function VideoMeet(){
     //         localVideoRef.current.srcObject = stream;
     //     }
     // }, [stream]);
+
+    useEffect(() => {
+        async function getMeetingInfo(){
+            try{
+                const response = await api.get(`users/meeting/${id}`);
+                setMeeting(response.data);
+            } catch(err){
+                console.error(err.message);
+            }
+        }
+
+        if(id){
+            getMeetingInfo()
+        }
+
+    }, [id]);
+
+    console.log(meeting.meetingData?.meeting_name);
 
 
     useEffect(()=> {
@@ -206,7 +254,10 @@ function VideoMeet(){
         socketRef.current = io(server_url,{ transports: ["websocket"], withCredentials: true });
         socketRef.current.on('signal', gotMessageFromServer);
         socketRef.current.on('connect', ()=>{
-            socketRef.current.emit("join-call", window.location.href);
+            socketRef.current.emit("join-call", {
+                room:window.location.href,
+                username: user?.username
+            });
             socketIdRef.current = socketRef.current.id;
             socketRef.current.on("chat-message", addMessage)
             socketRef.current.on("user-left", (id)=>{
@@ -214,7 +265,7 @@ function VideoMeet(){
                 // also ensure videoRef mirror is cleaned
                 videoRef.current = (videoRef.current || []).filter(v => v.socketId !== id);
             })
-            socketRef.current.on('user-joined', (id, clients)=>{
+            socketRef.current.on('user-joined', (id, clients, username)=>{
                 clients.forEach((socketListId)=> {
                     connections[socketListId] = new RTCPeerConnection(peerConfigConnections);
                     connections[socketListId].onicecandidate = (event) => {
@@ -316,7 +367,7 @@ function VideoMeet(){
     return (
         <>
             {askUsernameAvailable ? (
-                <div className='flex flex-col'>
+                <div className='flex flex-col items-center justify-center h-screen bg-zinc-900'>
                     <MeetingJoin
                         videoRef={localVideoRef}
                         mic={mic}
@@ -324,103 +375,108 @@ function VideoMeet(){
                         onMictoggle={handleJoinMicToggle}
                         onVidtoggle={handleJoinVideoToggle}
                     />
-                    {/*<MeetingJoinBrandInfo />*/}
                 </div>
             ) : (
-                <div className="w-full h-screen flex flex-col bg-zinc-900 text-white">
+                <div className="w-full h-screen bg-zinc-900 text-white flex flex-col">
                     {/* Top Bar */}
-                    <div className="w-full flex justify-between items-center px-6 py-3 bg-zinc-800 border-b border-zinc-700">
-                        <h2 className="font-semibold">Meeting ID: {id}</h2>
-                        <button
-                            onClick={() => window.location.href = "/dashboard"}
-                            className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md font-medium"
-                        >
-                            Leave Meeting
-                        </button>
+                    <div className="flex justify-between items-center px-6 py-3 bg-transparent">
+                        <h2 className="font-semibold text-md">{meeting.meetingData?.meeting_name}</h2>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => {
+                                    const meetingCode = id;
+                                    navigator.clipboard.writeText(meetingCode)
+                                        .then(() => toast.success("Meeting link copied!"))
+                                        .catch(() => toast.error("Failed to copy link"));
+                                }}
+                                className="text-blue-500 text-xs px-4 py-2 rounded-md font-medium transition"
+                            >
+                                Copy Meet Code
+                            </button>
+
+                            <button
+                                onClick={() => window.location.href = "/dashboard"}
+                                className="bg-red-600 hover:bg-red-700 text-sm p-2 rounded-md font-medium transition text-white flex items-center gap-2"
+                            >
+                                <LogOut size={16} />
+                                <p className='text-xs'>Leave Meeting</p>
+                            </button>
+                        </div>
                     </div>
 
                     {/* Video Grid */}
-                    <div className="flex-1 grid grid-cols-2 gap-2 p-4 overflow-auto">
-                        {/* Local video */}
-                        <div className="relative bg-black rounded-lg overflow-hidden">
+                    <div className="flex-1 grid gap-2 p-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 overflow-auto">
+                        {/* Local Video */}
+                        <div className="relative bg-black rounded-lg overflow-hidden flex items-center justify-center">
                             <video
                                 ref={localVideoRef}
                                 autoPlay
                                 playsInline
                                 muted
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover rounded-lg"
                             />
-                            <span className="absolute bottom-2 left-2 text-sm bg-black/60 px-2 py-1 rounded">
-              You
-            </span>
+                            <span className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-sm">
+                You
+              </span>
                         </div>
 
-                        {/* Remote videos */}
+                        {/* Remote Videos */}
                         {video.map((vid) => (
-                            <div
-                                key={vid.socketId}
-                                className="relative bg-black rounded-lg overflow-hidden"
-                            >
+                            <div key={vid.socketId} className="relative bg-black rounded-lg overflow-hidden flex items-center justify-center">
                                 <video
                                     autoPlay
                                     playsInline
-                                    ref={(ref) => {
-                                        if (ref && vid.stream) ref.srcObject = vid.stream;
-                                    }}
-                                    className="w-full h-full object-cover"
+                                    ref={(ref) => { if (ref && vid.stream) ref.srcObject = vid.stream; }}
+                                    className="w-full h-full object-cover rounded-lg"
                                 />
-                                <span className="absolute bottom-2 left-2 text-sm bg-black/60 px-2 py-1 rounded">
-                {vid.socketId}
-              </span>
+                                <span className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-sm">
+                  {vid.username || vid.socketId}
+                </span>
                             </div>
                         ))}
                     </div>
 
                     {/* Control Bar */}
-                    <div className="w-full flex justify-center items-center gap-6 py-4 bg-zinc-800 border-t border-zinc-700">
-                        {/* Mic toggle */}
+                    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-6 bg-zinc-800/90 backdrop-blur-md px-6 py-3 rounded-full shadow-lg border border-zinc-700">
+                        {/* Mic */}
                         <button
-                            onClick={() => {
-                                const audioTrack = window.localStream?.getAudioTracks()[0];
-                                if (audioTrack) {
-                                    audioTrack.enabled = !audioTrack.enabled;
-                                    setMic(!mic);
-                                }
-                            }}
-                            className="p-3 rounded-full bg-zinc-700 hover:bg-zinc-600"
+                            onClick={handleJoinMicToggle}
+                            className="p-3 rounded-full bg-zinc-700 hover:bg-zinc-600 transition"
                         >
-                            <i className={`fas ${mic ? "fa-microphone" : "fa-microphone-slash"}`} />
+                            {mic ? <Mic size={20} color="#34D399" /> : <MicOff size={20} color="#F87171" />}
                         </button>
 
-                        {/* Video toggle */}
+                        {/* Video */}
                         <button
-                            onClick={() => {
-                                const videoTrack = window.localStream?.getVideoTracks()[0];
-                                if (videoTrack) {
-                                    videoTrack.enabled = !videoTrack.enabled;
-                                    setVid(!vid);
-                                }
-                            }}
-                            className="p-3 rounded-full bg-zinc-700 hover:bg-zinc-600"
+                            onClick={handleJoinVideoToggle}
+                            className="p-3 rounded-full bg-zinc-700 hover:bg-zinc-600 transition"
                         >
-                            <i className={`fas ${vid ? "fa-video" : "fa-video-slash"}`} />
+                            {vid ? <Video size={20} color="#34D399" /> : <VideoOff size={20} color="#F87171" />}
                         </button>
 
-                        {/* Screen share (TODO implement logic) */}
-                        <button className="p-3 rounded-full bg-zinc-700 hover:bg-zinc-600">
-                            <i className="fas fa-desktop" />
+                        {/* Screen Share */}
+                        <button className="p-3 rounded-full bg-zinc-700 hover:bg-zinc-600 transition">
+                            <Monitor size={20} color="#fff" />
                         </button>
 
-                        {/* Chat (placeholder for now) */}
-                        <button className="p-3 rounded-full bg-zinc-700 hover:bg-zinc-600">
-                            <i className="fas fa-comment" />
+                        {/* Chat */}
+                        <button className="p-3 rounded-full bg-zinc-700 hover:bg-zinc-600 transition">
+                            <MessageCircle size={20} color="#fff" />
+                        </button>
+
+                        {/* Leave */}
+                        <button
+                            onClick={() => window.location.href = "/dashboard"}
+                            className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full font-medium transition flex items-center gap-2"
+                        >
+                            <LogOut size={16} />
+                            Leave
                         </button>
                     </div>
                 </div>
             )}
         </>
     );
-
 }
 
 export default VideoMeet;
