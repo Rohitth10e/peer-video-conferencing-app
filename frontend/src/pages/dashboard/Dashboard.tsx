@@ -1,5 +1,5 @@
 import Nav from "../../components/navbar/Nav.tsx";
-import SideBar from "../../components/sidebar/Sidebar.tsx";
+import Sidebar from "../../components/sidebar/Sidebar.tsx";
 import { useUser } from "../../context/UserContext.tsx";
 import BannerCard from "../../components/banner_cards/BannerCard.tsx";
 import PastMeetings from "../../components/Cards/PastMeetings.tsx";
@@ -73,7 +73,7 @@ function Dashboard() {
             {/* Main Content Layout */}
             <div className="flex flex-1">
                 {/* Sidebar (left) */}
-                <SideBar />
+                <Sidebar />
 
                 {/* Main Section (right) */}
                 <div className="flex-1 py-8 px-20 tracking-tighter overflow-y-auto">
