@@ -8,7 +8,7 @@
     "start": "node src/app.js",
     "prod": "pm2 src/app.js",
     "build": "echo 'No build step required for backend'",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"No tests yet\" && exit 0"
   },
   "keywords": [],
   "author": "",
