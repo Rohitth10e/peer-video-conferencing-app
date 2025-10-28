@@ -1,5 +1,5 @@
 import Nav from "../../components/navbar/Nav.tsx";
-import Sidebar from "../../components/sidebar/Sidebar.tsx";
+import Sidebar from "../../components/sidebar/SideBar.tsx";
 import { useUser } from "../../context/UserContext.tsx";
 import BannerCard from "../../components/banner_cards/BannerCard.tsx";
 import PastMeetings from "../../components/Cards/PastMeetings.tsx";
