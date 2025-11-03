@@ -32,7 +32,7 @@ app.use(express.urlencoded({extended:true, limit:'40kb'}))
 app.set("port", PORT)
 
 const db = async() =>{
-    await mongoose.connect("mongodb+srv://rohith10e:2223@peer-video-conference-a.ycceffc.mongodb.net/" || process.env.MONGO_URI)
+    await mongoose.connect(process.env.MONGO_URI)
     .then(()=> console.log("Connected to db"))
     .catch((err)=> logError("connection to db failed: ", err.message))
 }
