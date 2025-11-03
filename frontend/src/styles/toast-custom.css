@@ -1,0 +1,138 @@
+/* Custom Toast Styling with Accessibility & Responsiveness */
+
+/* Responsive positioning for mobile */
+@media (max-width: 640px) {
+  .Toastify__toast-container {
+    top: 0.5rem !important;
+    right: 0.5rem !important;
+    left: 0.5rem !important;
+    width: calc(100% - 1rem) !important;
+    max-width: none !important;
+  }
+}
+
+/* Enhanced toast base styles */
+.Toastify__toast {
+  font-family: system-ui, -apple-system, sans-serif;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  padding: 1rem;
+  min-height: 64px;
+  backdrop-filter: blur(8px);
+}
+
+/* Success Toast - Enhanced contrast */
+.Toastify__toast--success {
+  background-color: #10b981;
+  color: #ffffff;
+  border-left: 4px solid #059669;
+}
+
+.Toastify__toast--success .Toastify__progress-bar {
+  background: #ffffff;
+}
+
+/* Error Toast - Enhanced contrast */
+.Toastify__toast--error {
+  background-color: #ef4444;
+  color: #ffffff;
+  border-left: 4px solid #dc2626;
+}
+
+.Toastify__toast--error .Toastify__progress-bar {
+  background: #ffffff;
+}
+
+/* Warning Toast - Enhanced contrast */
+.Toastify__toast--warning {
+  background-color: #f59e0b;
+  color: #ffffff;
+  border-left: 4px solid #d97706;
+}
+
+.Toastify__toast--warning .Toastify__progress-bar {
+  background: #ffffff;
+}
+
+/* Info Toast - Enhanced contrast */
+.Toastify__toast--info {
+  background-color: #3b82f6;
+  color: #ffffff;
+  border-left: 4px solid #2563eb;
+}
+
+.Toastify__toast--info .Toastify__progress-bar {
+  background: #ffffff;
+}
+
+/* Close button with better contrast */
+.Toastify__close-button {
+  color: #ffffff;
+  opacity: 0.9;
+}
+
+.Toastify__close-button:hover {
+  opacity: 1;
+}
+
+/* Progress bar styling */
+.Toastify__progress-bar {
+  height: 4px;
+  border-radius: 0 0 0.5rem 0.5rem;
+}
+
+/* Animation enhancements */
+.Toastify__toast--top-right {
+  animation-name: toastSlideInRight;
+}
+
+@keyframes toastSlideInRight {
+  from {
+    transform: translate3d(110%, 0, 0);
+    opacity: 0;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+/* Accessibility - Focus styles */
+.Toastify__toast:focus-visible {
+  outline: 3px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .Toastify__toast {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .Toastify__toast {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .Toastify__toast--success {
+    background-color: #059669;
+  }
+  
+  .Toastify__toast--error {
+    background-color: #dc2626;
+  }
+  
+  .Toastify__toast--warning {
+    background-color: #d97706;
+  }
+  
+  .Toastify__toast--info {
+    background-color: #2563eb;
+  }
+}

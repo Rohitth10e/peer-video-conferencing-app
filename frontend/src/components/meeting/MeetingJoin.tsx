@@ -1,8 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../context/UserContext.tsx";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {MeetingJoinBrandInfo} from "./MeetingJoinBrandInfo.tsx";
-import {toast} from "react-toastify";
+import { logError } from '../../lib/logger';
+import { toastError } from '../../lib/toast';
 
 export function MeetingJoin({videoRef, mic, vid, onMictoggle, onVidtoggle}) {
     const navigate = useNavigate();
@@ -21,9 +22,8 @@ export function MeetingJoin({videoRef, mic, vid, onMictoggle, onVidtoggle}) {
 
     const handleCreate = async() => {
         const token = localStorage.getItem("authToken");
-        console.log(token);
         try {
-            const response =await fetch("/api/v1/users/create-meet", {
+            const response = await fetch("/api/v1/users/create-meet", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -32,22 +32,29 @@ export function MeetingJoin({videoRef, mic, vid, onMictoggle, onVidtoggle}) {
                 body: JSON.stringify({ meeting_name: meetingName, scheduledAt: scheduledAt, duration: duration }),
             });
 
-
             const data = await response.json();
+
+            if (!response.ok) {
+                // Handle error responses from backend
+                toastError(data.error || data.message || "Failed to create meeting");
+                return;
+            }
 
             if(data.meetingCode){
                 navigate(`/meeting/${data.meetingCode}`);
+            } else {
+                toastError("Invalid response from server");
             }
-            console.log(data);
         } catch (err) {
-            console.error(err);
+            toastError("Failed to create meeting. Please try again.");
+            logError("Create meeting error:", err);
         }
     }
 
     const handleJoin = async() => {
         const token = localStorage.getItem("authToken");
         try{
-            const response = await fetch(`api/v1/users/join-meet`,{
+            const response = await fetch(`/api/v1/users/join-meet`,{
                 method: "POST",
                 headers:{
                     "Authorization": `Bearer ${token}`,
@@ -55,39 +62,27 @@ export function MeetingJoin({videoRef, mic, vid, onMictoggle, onVidtoggle}) {
                 },
                 body: JSON.stringify({ meetingCode: meetingId }),
             });
+            
             const data = await response.json();
-            console.log(data);
 
-            if(response.status!=201){
-                alert(data.error)
-                return;
-            }
-
-            const now = new Date();
-            const start = new Date(data.scheduledAt);
-            const end = new Date(start.getTime() + data.duration * 60000);
-
-            if(now< start){
-                toast.warn("Meeting hasn't started yet")
-                return;
-            }
-
-            if(now>end){
-                toast.error("Meeting has ended")
+            if (!response.ok) {
+                toastError(data.error || data.message || "An unknown error occurred.");
                 return;
             }
 
             if (data.meeting_id) {
                 navigate(`/meeting/${data.meeting_id}`);
             } else {
-                toast.error("Invalid meeting response");
+                toastError("Invalid meeting response");
             }
 
         } catch (err) {
-            console.error(err.message);
-            toast.error("Something went wrong")
+            toastError("Failed to join. Please check your network or the Meeting ID.");
+            logError("Join meeting error:", err);
         }
     }
+
+
 
     return (
         <div className="w-full h-screen flex flex-col">
@@ -143,7 +138,7 @@ export function MeetingJoin({videoRef, mic, vid, onMictoggle, onVidtoggle}) {
                                             value={meetingName}
                                             onChange={(e) => setMeetingName(e.target.value)}
                                             placeholder='Meeting name(optional)'
-                                            className='text-sm w-[320px] outline-none rounded-md border-zinc-300 border-[1px] p-2 mt-2'
+                                            className='text-sm w-[320px] outline-none rounded-md border border-zinc-300 p-2 mt-2'
                                         />
                                     </div>
                                     <div className="flex flex-col items-start mb-2">
@@ -171,7 +166,7 @@ export function MeetingJoin({videoRef, mic, vid, onMictoggle, onVidtoggle}) {
                                                 value={duration}
                                                 onChange={(e) => setDuration(parseInt(e.target.value))}
                                                 placeholder="Duration"
-                                                className="text-sm w-full outline-none rounded-md border border-zinc-300 border-[1px] p-2 pr-12"
+                                                className="text-sm w-full outline-none rounded-md border border-zinc-300 p-2 pr-12"
                                             />
                                             <span
                                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-zinc-500">
@@ -199,7 +194,7 @@ export function MeetingJoin({videoRef, mic, vid, onMictoggle, onVidtoggle}) {
                                         value={meetingId}
                                         onChange={(e) => setMeetingId(e.target.value)}
                                         placeholder='Meeting ID'
-                                        className='w-[320px] text-sm outline-none rounded-md border-zinc-300 border-[1px] p-2 mt-2'
+                                        className='w-[320px] text-sm outline-none rounded-md border border-zinc-300 p-2 mt-2'
                                     />
                                 </div>
                                 <div className='card-foot'>
