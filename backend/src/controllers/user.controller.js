@@ -28,10 +28,10 @@ const register = async(req,res)=>{
         const newUser = new User({name, email, username, password:hashedPassword});
         await newUser.save();
 
-        res.status(httpStatus[202]).json({message:"user registered", success: true})
+        res.status(httpStatus.ACCEPTED).json({message:"user registered", success: true})
 
     } catch(err) {
-        res.status(httpStatus[500]).json({message:"error registering user"})
+        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({message:"error registering user"})
         return
     }
 }

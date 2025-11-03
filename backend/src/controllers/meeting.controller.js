@@ -1,13 +1,14 @@
 import {randomUUID as uuid} from "crypto";
 import {Meeting} from "../models/meeting.js";
+import { logError } from "../utils/logger.js";
 
 export const createMeet = async(req, res)=>{
     try {
         const meet_id = uuid();
-        if(!req.user) return res.status(400).send({error: 'User not found'});
+        if(!req.user) return res.status(400).json({error: 'User not found'});
         const { meeting_name, scheduledAt, duration} = req.body;
 
-        if(!meeting_name || !scheduledAt || !duration) return res.status(400).send({error: 'Fill out required fields'});
+        if(!meeting_name || !scheduledAt || !duration) return res.status(400).json({error: 'Fill out required fields'});
 
         const meeting = new Meeting({
             user_id:req.user.email,
@@ -28,9 +29,7 @@ export const createMeet = async(req, res)=>{
             user_id: req.user.email
         });
     } catch (e) {
-        if(process.env.NODE_ENV === 'development'){
-            console.error(e);
-        }
+        logError(e);
         return res.status(500).json({error: "Something went wrong"});
     }
 }
@@ -40,14 +39,14 @@ export const createMeet = async(req, res)=>{
 export const joinMeet = async(req, res)=>{
     try{
         const { meetingCode } = req.body;
-        if(!meetingCode) return res.status(400).send({error: 'Meeting Id is required'});
+        if(!meetingCode) return res.status(400).json({error: 'Meeting Id is required'});
 
         const meeting = await Meeting.findOne({meetingCode: meetingCode})
-        if(!meeting) return res.status(400).send({error: 'Meeting not found'});
+        if(!meeting) return res.status(400).json({error: 'Meeting not found'});
 
         const now = new Date();
         const meetingEnd = new Date(meeting.scheduledAt);
-        meetingEnd.setMinutes(meetingEnd.getMinutes() + meetingEnd.duration);
+        meetingEnd.setMinutes(meetingEnd.getMinutes() + meeting.duration);
 
         if (now < meeting.scheduledAt) {
             return res.status(400).json({ error: "Meeting has not started yet" });
@@ -68,9 +67,7 @@ export const joinMeet = async(req, res)=>{
         })
 
     } catch (e) {
-        if (process.env.NODE_ENV === "development") {
-            console.error(e);
-        }
+        logError(e);
         return res.status(500).json({ error: "Something went wrong" });
     }
 }
@@ -80,9 +77,7 @@ export const getMeetings = async(req, res)=>{
         const meetings = await Meeting.find();
         return res.status(200).json({meetingsData: meetings});
     } catch (e) {
-        if (process.env.NODE_ENV === "development") {
-            console.error(e);
-        }
+        logError(e);
         return res.status(500).json({ error: "Something went wrong" });
     }
 }
@@ -91,10 +86,10 @@ export const getMeetingInfo = async(req,res)=>{
     const { id } = req.params;
     try{
         const meeting = await Meeting.findOne({ meetingCode: id });
-        if(!meeting) return res.status(400).send({error: 'Meeting not found'});
+        if(!meeting) return res.status(400).json({error: 'Meeting not found'});
         return res.status(200).json({meetingData: meeting});
     } catch(err) {
-            console.error(err)
+        logError(err)
         return res.status(500).json({ error: "Something went wrong" });
     }
 }

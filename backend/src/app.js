@@ -8,6 +8,7 @@ import { initializeSocket } from './controllers/socketmanager.js';
 import cors from 'cors'
 import userRoutes from './routes/userRoutes.js'
 import bodyParser from 'body-parser';
+import { logError } from './utils/logger.js';
 
 const app = express();
 app.use((req, res, next) => {
@@ -31,9 +32,9 @@ app.use(express.urlencoded({extended:true, limit:'40kb'}))
 app.set("port", PORT)
 
 const db = async() =>{
-    await mongoose.connect("mongodb+srv://rohith10e:2223@peer-video-conference-a.ycceffc.mongodb.net/" || process.env.MONGO_URI)
+    await mongoose.connect(process.env.MONGO_URI)
     .then(()=> console.log("Connected to db"))
-    .catch((err)=> console.error("connection to db failed: ", err.message))
+    .catch((err)=> logError("connection to db failed: ", err.message))
 }
 
 app.use("/api/v1/users",userRoutes)

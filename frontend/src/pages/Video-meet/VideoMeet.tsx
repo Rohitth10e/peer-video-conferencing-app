@@ -9,6 +9,8 @@ import api from "../../api/api.ts";
 import {
     Mic, MicOff, Video, VideoOff, Monitor, MessageCircle, LogOut
 } from 'lucide-react';
+import { logError, logInfo } from '../../lib/logger';
+import { toastError, toastSuccess, toastInfo, toastWarn } from '../../lib/toast';
 
 const server_url = server
 const connections = {};
@@ -57,7 +59,7 @@ function VideoMeet(){
     const [meeting, setMeeting] = useState([]);
 
     const { id } = useParams();
-    console.log("Meeting ID:", id);
+    logInfo("Meeting ID:", id);
     const {user} = useUser()
 
     function handleJoinMicToggle(){
@@ -90,7 +92,8 @@ function VideoMeet(){
                 const response = await api.get(`users/meeting/${id}`);
                 setMeeting(response.data);
             } catch(err){
-                console.error(err.message);
+                toastError("Failed to fetch meeting info");
+                logError(err);
             }
         }
 
@@ -100,13 +103,14 @@ function VideoMeet(){
 
     }, [id]);
 
-    console.log(meeting.meetingData?.meeting_name);
+    logInfo("Meeting name:", meeting.meetingData?.meeting_name);
 
 
     useEffect(()=> {
         if(id && stream) {
             connect();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id, stream])
 
     const getPermissions = async () => {
@@ -120,16 +124,28 @@ function VideoMeet(){
             if (localVideoRef.current) localVideoRef.current.srcObject = mediaStream;
             return mediaStream;
         } catch(err) {
-            console.log(err);
-            toast.error(`Error getting video stream: ${err.message}`);
+            // Type guard to check if err is a DOMException with a name property
+            const error = err as DOMException;
+            
+            // Check the specific error type
+            if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                toastWarn("Camera/microphone access denied. You can still join as a viewer.");
+            } else if (error.name === 'NotFoundError') {
+                toastError("No camera or microphone found on your device.");
+            } else {
+                toastError("Unable to access camera/microphone. Please check your device settings.");
+            }
+            logError("Error in getPermissions:", err);
             return null;
         }
     }
 
     useEffect(()=>{
-        // run once
-        getPermissions();
-    },[])
+        // Request permissions when on a meeting page (has id) and showing join UI
+        if (id && askUsernameAvailable) {
+            getPermissions();
+        }
+    }, [id, askUsernameAvailable])
 
     useEffect(() => {
         if(localVideoRef.current && stream){
@@ -142,7 +158,7 @@ function VideoMeet(){
         try {
             window.localStream?.getTracks().forEach((track)=>{ track.stop() });
         } catch(err) {
-            console.log(err);
+            logError(err);
         }
 
         window.localStream = s;
@@ -157,7 +173,13 @@ function VideoMeet(){
                     .then(()=>{
                         socketRef.current.emit("signal", id, JSON.stringify({"sdp":connections[id].localDescription}));
                     })
-                    .catch(err => console.log(err));
+                    .catch(err => {
+                        toastError("Failed to set local description");
+                        logError(err);
+                    });
+            }).catch(err => {
+                toastError("Failed to create offer");
+                logError(err);
             })
         }
 
@@ -168,7 +190,7 @@ function VideoMeet(){
             try{
                 const tracks = localVideoRef.current.srcObject.getTracks();
                 tracks.forEach(track => track.stop() );
-            } catch (e) { console.log(e) }
+            } catch (e) { logError(e) }
 
             // BlackSilence fallback
             const blackSilence = (...args) => new MediaStream([black(...args), silence()])
@@ -180,7 +202,13 @@ function VideoMeet(){
                 connections[id].createOffer().then((desc)=>{
                     connections[id].setLocalDescription(desc).then(()=>{
                         socketRef.current.emit("signal", id, JSON.stringify({"sdp":connections[id].localDescription}));
-                    }).catch( err => console.log(err) );
+                    }).catch( err => {
+                        toastError("Failed to set local description");
+                        logError(err);
+                    });
+                }).catch(err => {
+                    toastError("Failed to create offer");
+                    logError(err);
                 })
             }
         })
@@ -208,12 +236,15 @@ function VideoMeet(){
         if(videoEnabled.current && audioEnabled.current){
             navigator.mediaDevices.getUserMedia({video: true, audio: true})
                 .then((s)=>{ getUserMediaSuccess(s) }) // pass stream
-                .catch((err)=>{console.log(err)})
+                .catch((err)=>{
+                    toastError("Failed to access camera/microphone");
+                    logError(err);
+                })
         } else {
             try {
                 const tracks = localVideoRef.current?.srcObject?.getTracks() || [];
                 tracks.forEach((track)=> track.stop())
-            } catch (e) { console.log(e) }
+            } catch (e) { logError(e) }
         }
     }
 
@@ -224,7 +255,8 @@ function VideoMeet(){
         try {
             signal = typeof message === "string" ? JSON.parse(message) : message;
         } catch(e) {
-            console.error("Invalid signal message:", message);
+            toastError("Invalid signal received");
+            logError("Invalid signal message:", message, e);
             return;
         }
 
@@ -236,24 +268,36 @@ function VideoMeet(){
                             connections[fromId].setLocalDescription(description).then(()=>{
                                 socketRef.current.emit("signal", fromId, JSON.stringify({"sdp":description}));
                             })
-                        }).catch((e)=>{console.log(e)})
+                        }).catch((e)=>{
+                            toastError("Failed to create answer");
+                            logError(e);
+                        })
                     }
-                }).catch((e)=>{console.log(e)})
+                }).catch((e)=>{
+                    toastError("Failed to set remote description");
+                    logError(e);
+                })
             }
 
             if(signal.ice){
-                connections[fromId].addIceCandidate(new RTCIceCandidate(signal.ice)).catch((e)=>{console.log(e)});
+                connections[fromId].addIceCandidate(new RTCIceCandidate(signal.ice)).catch((e)=>{
+                    toastWarn("Failed to add ICE candidate");
+                    logError(e);
+                });
             }
         }
     }
 
     //TODO
-    const addMessage = (message) => {}
+    const addMessage = () => {}
 
     const connectToSocketServer = () => {
         socketRef.current = io(server_url,{ transports: ["websocket"], withCredentials: true });
         socketRef.current.on('signal', gotMessageFromServer);
+        
+        // Socket connection events
         socketRef.current.on('connect', ()=>{
+            toastSuccess("Connected to server");
             socketRef.current.emit("join-call", {
                 room:window.location.href,
                 username: user?.username
@@ -261,21 +305,40 @@ function VideoMeet(){
             socketIdRef.current = socketRef.current.id;
             socketRef.current.on("chat-message", addMessage)
             socketRef.current.on("user-left", (id)=>{
+                toastInfo("User left the meeting");
                 setVideo((videos)=> videos.filter((video)=>video.socketId !== id))
                 // also ensure videoRef mirror is cleaned
                 videoRef.current = (videoRef.current || []).filter(v => v.socketId !== id);
             })
-            socketRef.current.on('user-joined', (id, clients, username)=>{
+            socketRef.current.on('user-joined', (id, clients)=>{
+                toastInfo("User joined the meeting");
                 clients.forEach((socketListId)=> {
                     connections[socketListId] = new RTCPeerConnection(peerConfigConnections);
+                    
+                    // ICE candidate event
                     connections[socketListId].onicecandidate = (event) => {
                         if(event.candidate!= null){
                             socketRef.current.emit("signal", socketListId, JSON.stringify({'ice':event.candidate}));
                         }
                     };
 
+                    // ICE connection state change
+                    connections[socketListId].oniceconnectionstatechange = () => {
+                        const state = connections[socketListId].iceConnectionState;
+                        if (state === "connected") {
+                            toastSuccess("Peer connection established");
+                        } else if (state === "disconnected") {
+                            toastWarn("Peer connection lost");
+                        } else if (state === "failed") {
+                            toastError("Connection failed");
+                        } else if (state === "closed") {
+                            toastInfo("Peer connection closed");
+                        }
+                    };
+
                     // set onaddstream separately (outside onicecandidate — your previous code nested it)
                     connections[socketListId].onaddstream = (event) => {
+                        toastSuccess("Connected to peer");
                         const videoExists = (videoRef.current || []).find(video => video.socketId == socketListId);
 
                         if(videoExists) {
@@ -304,7 +367,7 @@ function VideoMeet(){
 
                     // Add the local stream if available
                     if(window.localStream != undefined && window.localStream != null){
-                        try { connections[socketListId].addStream(window.localStream); } catch(e) { console.warn(e) }
+                        try { connections[socketListId].addStream(window.localStream); } catch(e) { logError(e) }
                     } else {
                         const blackSilence = (...args) => new MediaStream([black(...args), silence()])
                         window.localStream = blackSilence();
@@ -317,17 +380,35 @@ function VideoMeet(){
                         if(id2 === socketIdRef.current) continue
                         try{
                             connections[id2].addStream(window.localStream);
-                        } catch(e) {}
+                        } catch(e) {
+                            logError(e);
+                        }
                         connections[id2].createOffer().then((desc)=>{
                             connections[id2].setLocalDescription(desc)
                                 .then(()=>{
                                     socketRef.current.emit("signal", id2, JSON.stringify({"sdp":connections[id2].localDescription}));
                                 })
-                                .catch((err)=>{console.log(err)});
+                                .catch((err)=>{
+                                    toastError("Failed to set local description");
+                                    logError(err);
+                                });
+                        }).catch((err) => {
+                            toastError("Failed to create offer");
+                            logError(err);
                         })
                     }
                 }
             });
+        });
+
+        // Socket disconnect handler
+        socketRef.current.on('disconnect', () => {
+            toastError("Disconnected from server");
+        });
+
+        // Socket connection error handler
+        socketRef.current.on('connect_error', () => {
+            toastError("Connection error - retrying...");
         });
     }
 
@@ -337,7 +418,9 @@ function VideoMeet(){
             // try to obtain permissions synchronously here
             const s = await getPermissions();
             if(!s){
-                toast.error(`Cannot access camera/mic.`);
+                // Don't show duplicate error - getPermissions already showed a toast
+                // User can still join the meeting as a viewer/listener
+                logError("No stream available, continuing without local media");
                 return;
             }
             // update local stream var used by rest of flow
@@ -347,15 +430,22 @@ function VideoMeet(){
         }
 
         // now stream exists — set refs based on actual tracks
-        const videoTrack = window.localStream.getVideoTracks();
-        const audioTrack = window.localStream.getAudioTracks();
+        if (window.localStream) {
+            const videoTrack = window.localStream.getVideoTracks();
+            const audioTrack = window.localStream.getAudioTracks();
 
-        videoEnabled.current = videoTrack.length > 0;
-        audioEnabled.current = audioTrack.length > 0;
+            videoEnabled.current = videoTrack.length > 0;
+            audioEnabled.current = audioTrack.length > 0;
 
-        // call getUserMedia to (re)apply behavior if needed
-        getUserMedia();
+            // call getUserMedia to (re)apply behavior if needed
+            getUserMedia();
+        } else {
+            // No stream available - user will join as viewer only
+            videoEnabled.current = false;
+            audioEnabled.current = false;
+        }
 
+        // Connect to socket server regardless of stream availability
         connectToSocketServer();
     }
 
